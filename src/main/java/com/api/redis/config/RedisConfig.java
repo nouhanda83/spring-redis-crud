@@ -1,4 +1,3 @@
-// src/main/java/com/api/redis/config/RedisConfig.java
 package com.api.redis.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -26,9 +25,14 @@ public class RedisConfig {
     if (!password.isEmpty()) {
       conf.setPassword(RedisPassword.of(password));
     }
-    LettuceClientConfiguration clientCfg = LettuceClientConfiguration.builder()
-        .useSsl(sslEnabled)
-        .build();
+
+    LettuceClientConfiguration.LettuceClientConfigurationBuilder clientBuilder =
+        LettuceClientConfiguration.builder();
+    if (sslEnabled) {
+      clientBuilder.useSsl();   // senza argomenti
+    }
+    LettuceClientConfiguration clientCfg = clientBuilder.build();
+
     return new LettuceConnectionFactory(conf, clientCfg);
   }
 
