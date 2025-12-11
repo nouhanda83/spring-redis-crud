@@ -37,11 +37,20 @@ public class RedisConfig {
   }
 
   @Bean
-  public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory cf) {
-    RedisTemplate<String, Object> tpl = new RedisTemplate<>();
-    tpl.setConnectionFactory(cf);
-    tpl.setKeySerializer(new StringRedisSerializer());
-    tpl.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-    return tpl;
-  }
+public RedisTemplate<String, com.api.redis.models.User> userRedisTemplate(LettuceConnectionFactory cf) {
+  RedisTemplate<String, com.api.redis.models.User> tpl = new RedisTemplate<>();
+  tpl.setConnectionFactory(cf);
+
+  StringRedisSerializer stringSer = new StringRedisSerializer();
+  Jackson2JsonRedisSerializer<com.api.redis.models.User> userJsonSer =
+      new Jackson2JsonRedisSerializer<>(com.api.redis.models.User.class);
+
+  tpl.setKeySerializer(stringSer);
+  tpl.setValueSerializer(userJsonSer);
+  tpl.setHashKeySerializer(stringSer);
+  tpl.setHashValueSerializer(userJsonSer);
+  tpl.afterPropertiesSet();
+  return tpl;
 }
+}
+
