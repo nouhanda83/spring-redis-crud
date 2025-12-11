@@ -26,31 +26,32 @@ public class RedisConfig {
       conf.setPassword(RedisPassword.of(password));
     }
 
-    LettuceClientConfiguration.LettuceClientConfigurationBuilder clientBuilder =
+    LettuceClientConfiguration.LettuceClientConfigurationBuilder b =
         LettuceClientConfiguration.builder();
     if (sslEnabled) {
-      clientBuilder.useSsl();   // senza argomenti
+      b.useSsl(); // senza argomenti nella versione in uso
     }
-    LettuceClientConfiguration clientCfg = clientBuilder.build();
 
-    return new LettuceConnectionFactory(conf, clientCfg);
+    return new LettuceConnectionFactory(conf, b.build());
   }
 
   @Bean
-public RedisTemplate<String, com.api.redis.models.User> userRedisTemplate(LettuceConnectionFactory cf) {
-  RedisTemplate<String, com.api.redis.models.User> tpl = new RedisTemplate<>();
-  tpl.setConnectionFactory(cf);
+  public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory cf) {
+    RedisTemplate<String, Object> tpl = new RedisTemplate<>();
+    tpl.setConnectionFactory(cf);
 
-  StringRedisSerializer stringSer = new StringRedisSerializer();
-  Jackson2JsonRedisSerializer<com.api.redis.models.User> userJsonSer =
-      new Jackson2JsonRedisSerializer<>(com.api.redis.models.User.class);
+    StringRedisSerializer str = new StringRedisSerializer();
+    GenericJackson2JsonRedisSerializer json = new GenericJackson2JsonRedisSerializer();
 
-  tpl.setKeySerializer(stringSer);
-  tpl.setValueSerializer(userJsonSer);
-  tpl.setHashKeySerializer(stringSer);
-  tpl.setHashValueSerializer(userJsonSer);
-  tpl.afterPropertiesSet();
-  return tpl;
+    // key/value
+    tpl.setKeySerializer(str);
+    tpl.setValueSerializer(json);
+
+    // hash key/value (cruciale)
+    tpl.setHashKeySerializer(str);
+    tpl.setHashValueSerializer(json);
+
+    tpl.afterPropertiesSet();
+    return tpl;
+  }
 }
-}
-
